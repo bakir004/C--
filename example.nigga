@@ -1,6 +1,0 @@
-fun nigga(first, second) [
-  nigson = first * second
-  return nigson
-]
-
-print(nigga(3,-5))
