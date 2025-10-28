@@ -2,4 +2,11 @@ fun 🧴nigga(first, second) [
   nigso🧴n = first * second
   return nigson🧴
 ]
+while 3 > 5 [
+  print(2)
+]
+print("nigga")
+while 4 > 5 [
+  print(1)
+]
 print(nigga(2,4))🧴

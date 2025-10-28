@@ -53,7 +53,8 @@ const lexer = moo.compile({
             and: "and",
             or: "or",
             true: "true",
-            false: "false"
+            false: "false",
+            delete: "delete"
         })
     }
 });
@@ -114,6 +115,8 @@ var grammar = {
     {"name": "top_level_statement", "symbols": ["proc_definition"], "postprocess": id},
     {"name": "top_level_statement", "symbols": ["line_comment"], "postprocess": id},
     {"name": "top_level_statement", "symbols": ["call_statement"], "postprocess": id},
+    {"name": "top_level_statement", "symbols": ["while_loop"], "postprocess": id},
+    {"name": "top_level_statement", "symbols": ["delete_statement"], "postprocess": id},
     {"name": "print_statement", "symbols": [{"literal":"print"}, "__", {"literal":"("}, "_", "expression", "_", {"literal":")"}]},
     {"name": "fun_definition", "symbols": [{"literal":"fun"}, "__", "identifier", "_", {"literal":"("}, "_", "parameter_list", "_", {"literal":")"}, "_", "code_block"], "postprocess": 
         d => ({
@@ -162,6 +165,14 @@ var grammar = {
     {"name": "executable_statement", "symbols": ["while_loop"], "postprocess": id},
     {"name": "executable_statement", "symbols": ["if_statement"], "postprocess": id},
     {"name": "executable_statement", "symbols": ["for_loop"], "postprocess": id},
+    {"name": "delete_statement", "symbols": [{"literal":"delete"}, "__", "identifier_or_keyword"], "postprocess": 
+        d => ({
+            type: "delete_statement",
+            identifier: d[2],
+            start: tokenStart(d[0]),
+            end: d[2].end
+        })
+                },
     {"name": "return_statement", "symbols": [{"literal":"return"}, "__", "expression"], "postprocess": 
         d => ({
             type: "return_statement",
@@ -396,6 +407,20 @@ var grammar = {
     {"name": "string_literal", "symbols": [(lexer.has("string_literal") ? {type: "string_literal"} : string_literal)], "postprocess": convertTokenId},
     {"name": "number", "symbols": [(lexer.has("number_literal") ? {type: "number_literal"} : number_literal)], "postprocess": convertTokenId},
     {"name": "identifier", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"fun"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"proc"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"while"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"for"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"else"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"in"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"if"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"return"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"and"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"or"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"true"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"false"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"delete"}], "postprocess": convertTokenId},
     {"name": "_ml$ebnf$1", "symbols": []},
     {"name": "_ml$ebnf$1", "symbols": ["_ml$ebnf$1", "multi_line_ws_char"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "_ml", "symbols": ["_ml$ebnf$1"]},

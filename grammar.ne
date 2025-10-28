@@ -49,7 +49,8 @@ const lexer = moo.compile({
             and: "and",
             or: "or",
             true: "true",
-            false: "false"
+            false: "false",
+            delete: "delete"
         })
     }
 });
@@ -115,11 +116,13 @@ top_level_statements
         %}
 
 top_level_statement
-    -> fun_definition   {% id %}
+    -> fun_definition    {% id %}
     |  print_statement  {% id %}
-    |  proc_definition  {% id %}
+    |  proc_definition   {% id %}
     |  line_comment     {% id %}
     |  call_statement   {% id %}
+    |  while_loop       {% id %}
+    |  delete_statement {% id %}
 
 print_statement
     -> "print" __ "(" _ expression _ ")"
@@ -190,6 +193,17 @@ executable_statement
    |  while_loop           {% id %}
    |  if_statement         {% id %}
    |  for_loop             {% id %}
+
+delete_statement
+   -> "delete" __ identifier_or_keyword 
+        {%
+            d => ({
+                type: "delete_statement",
+                identifier: d[2],
+                start: tokenStart(d[0]),
+                end: d[2].end
+            })
+        %}
 
 return_statement
    -> "return" __ expression
@@ -506,6 +520,22 @@ string_literal -> %string_literal {% convertTokenId %}
 number -> %number_literal {% convertTokenId %}
 
 identifier -> %identifier {% convertTokenId %}
+
+identifier_or_keyword
+    -> %identifier {% convertTokenId %}
+    |  "fun"       {% convertTokenId %}
+    |  "proc"      {% convertTokenId %}
+    |  "while"     {% convertTokenId %}
+    |  "for"       {% convertTokenId %}
+    |  "else"      {% convertTokenId %}
+    |  "in"        {% convertTokenId %}
+    |  "if"        {% convertTokenId %}
+    |  "return"    {% convertTokenId %}
+    |  "and"       {% convertTokenId %}
+    |  "or"        {% convertTokenId %}
+    |  "true"      {% convertTokenId %}
+    |  "false"     {% convertTokenId %}
+    |  "delete"    {% convertTokenId %}
 
 _ml -> multi_line_ws_char:*
 
