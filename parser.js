@@ -42,9 +42,8 @@ const lexer = moo.compile({
     identifier: {
         match: /[a-z_][a-z_0-9]*/,
         type: moo.keywords({
-            fun: "fun",
-            proc: "proc",
             while: "while",
+            fn: "fn",
             for: "for",
             else: "else",
             in: "in",
@@ -54,6 +53,7 @@ const lexer = moo.compile({
             or: "or",
             true: "true",
             false: "false",
+            maybe: "maybe",
             delete: "delete"
         })
     }
@@ -91,6 +91,7 @@ function convertTokenId(data) {
     return convertToken(data[0]);
 }
 
+
 var grammar = {
     Lexer: lexer,
     ParserRules: [
@@ -111,26 +112,10 @@ var grammar = {
         d => []
                 },
     {"name": "top_level_statement", "symbols": ["fun_definition"], "postprocess": id},
-    {"name": "top_level_statement", "symbols": ["print_statement"], "postprocess": id},
-    {"name": "top_level_statement", "symbols": ["proc_definition"], "postprocess": id},
-    {"name": "top_level_statement", "symbols": ["line_comment"], "postprocess": id},
-    {"name": "top_level_statement", "symbols": ["call_statement"], "postprocess": id},
-    {"name": "top_level_statement", "symbols": ["while_loop"], "postprocess": id},
-    {"name": "top_level_statement", "symbols": ["delete_statement"], "postprocess": id},
-    {"name": "print_statement", "symbols": [{"literal":"print"}, "__", {"literal":"("}, "_", "expression", "_", {"literal":")"}]},
-    {"name": "fun_definition", "symbols": [{"literal":"fun"}, "__", "identifier", "_", {"literal":"("}, "_", "parameter_list", "_", {"literal":")"}, "_", "code_block"], "postprocess": 
+    {"name": "top_level_statement", "symbols": ["executable_statement"], "postprocess": id},
+    {"name": "fun_definition", "symbols": [{"literal":"fn"}, "_", "identifier", "_", {"literal":"("}, "_", "parameter_list", "_", {"literal":")"}, "_", "code_block"], "postprocess": 
         d => ({
             type: "fun_definition",
-            name: d[2],
-            parameters: d[6],
-            body: d[10],
-            start: tokenStart(d[0]),
-            end: d[10].end
-        })
-                },
-    {"name": "proc_definition", "symbols": [{"literal":"proc"}, "__", "identifier", "_", {"literal":"("}, "_", "parameter_list", "_", {"literal":")"}, "_", "code_block"], "postprocess": 
-        d => ({
-            type: "proc_definition",
             name: d[2],
             parameters: d[6],
             body: d[10],
@@ -143,7 +128,7 @@ var grammar = {
     {"name": "parameter_list", "symbols": ["identifier", "_", {"literal":","}, "_", "parameter_list"], "postprocess": 
         d => [d[0], ...d[4]]
                 },
-    {"name": "code_block", "symbols": [{"literal":"["}, "executable_statements", {"literal":"]"}], "postprocess": 
+    {"name": "code_block", "symbols": [{"literal":"{"}, "executable_statements", {"literal":"}"}], "postprocess": 
         (d) => ({
             type: "code_block",
             statements: d[1],
@@ -159,13 +144,16 @@ var grammar = {
                 },
     {"name": "executable_statement", "symbols": ["return_statement"], "postprocess": id},
     {"name": "executable_statement", "symbols": ["var_assignment"], "postprocess": id},
+    {"name": "executable_statement", "symbols": ["var_initialization"], "postprocess": id},
     {"name": "executable_statement", "symbols": ["call_statement"], "postprocess": id},
     {"name": "executable_statement", "symbols": ["line_comment"], "postprocess": id},
     {"name": "executable_statement", "symbols": ["indexed_assignment"], "postprocess": id},
     {"name": "executable_statement", "symbols": ["while_loop"], "postprocess": id},
     {"name": "executable_statement", "symbols": ["if_statement"], "postprocess": id},
-    {"name": "executable_statement", "symbols": ["for_loop"], "postprocess": id},
-    {"name": "delete_statement", "symbols": [{"literal":"delete"}, "__", "identifier_or_keyword"], "postprocess": 
+    {"name": "executable_statement", "symbols": ["print_statement"], "postprocess": id},
+    {"name": "executable_statement", "symbols": ["delete_statement"], "postprocess": id},
+    {"name": "print_statement", "symbols": [{"literal":"print"}, "__", {"literal":"("}, "_", "expression", "_", {"literal":")"}]},
+    {"name": "delete_statement", "symbols": [{"literal":"delete"}, "__", "deletable"], "postprocess": 
         d => ({
             type: "delete_statement",
             identifier: d[2],
@@ -181,6 +169,15 @@ var grammar = {
             end: d[2].end
         })
                },
+    {"name": "var_initialization", "symbols": [{"literal":"naprimjer"}, "_", "identifier", "_", {"literal":"="}, "_", "expression"], "postprocess": 
+        d => ({
+            type: "var_initialization",
+            var_name: d[2],
+            value: d[6],
+            start: d[0].start,
+            end: d[6].end
+        })
+                },
     {"name": "var_assignment", "symbols": ["identifier", "_", {"literal":"="}, "_", "expression"], "postprocess": 
         d => ({
             type: "var_assignment",
@@ -257,16 +254,6 @@ var grammar = {
             end: d[8].end
         })
                },
-    {"name": "for_loop", "symbols": [{"literal":"for"}, "__", "identifier", "__", {"literal":"in"}, "__", "expression", "_", "code_block"], "postprocess": 
-        d => ({
-            type: "for_loop",
-            loop_variable: d[2],
-            iterable: d[6],
-            body: d[8],
-            start: tokenStart(d[0]),
-            end: d[8].end
-        })
-                },
     {"name": "argument_list", "symbols": [], "postprocess": () => []},
     {"name": "argument_list", "symbols": ["_", "expression", "_"], "postprocess": d => [d[1]]},
     {"name": "argument_list", "symbols": ["_", "expression", "_", {"literal":","}, "argument_list"], "postprocess": 
@@ -302,6 +289,7 @@ var grammar = {
     {"name": "comparison_operator", "symbols": [{"literal":"<"}], "postprocess": convertTokenId},
     {"name": "comparison_operator", "symbols": [{"literal":"<="}], "postprocess": convertTokenId},
     {"name": "comparison_operator", "symbols": [{"literal":"=="}], "postprocess": convertTokenId},
+    {"name": "comparison_operator", "symbols": [{"literal":"="}], "postprocess": convertTokenId},
     {"name": "additive_expression", "symbols": ["multiplicative_expression"], "postprocess": id},
     {"name": "additive_expression", "symbols": ["multiplicative_expression", "_", /[+-]/, "_", "additive_expression"], "postprocess": 
         d => ({
@@ -337,10 +325,8 @@ var grammar = {
     {"name": "unary_expression", "symbols": ["call_expression"], "postprocess": id},
     {"name": "unary_expression", "symbols": ["string_literal"], "postprocess": id},
     {"name": "unary_expression", "symbols": ["list_literal"], "postprocess": id},
-    {"name": "unary_expression", "symbols": ["dictionary_literal"], "postprocess": id},
     {"name": "unary_expression", "symbols": ["boolean_literal"], "postprocess": id},
     {"name": "unary_expression", "symbols": ["indexed_access"], "postprocess": id},
-    {"name": "unary_expression", "symbols": ["fun_expression"], "postprocess": id},
     {"name": "unary_expression", "symbols": [{"literal":"("}, "expression", {"literal":")"}], "postprocess": 
         data => data[1]
                 },
@@ -360,24 +346,6 @@ var grammar = {
             ...d[4]
         ]
                 },
-    {"name": "dictionary_literal", "symbols": [{"literal":"{"}, "dictionary_entries", {"literal":"}"}], "postprocess": 
-        d => ({
-            type: "dictionary_literal",
-            entries: d[1],
-            start: tokenStart(d[0]),
-            end: tokenEnd(d[2])
-        })
-                },
-    {"name": "dictionary_entries", "symbols": [], "postprocess": () => []},
-    {"name": "dictionary_entries", "symbols": ["_ml", "dictionary_entry", "_ml"], "postprocess": 
-        d => [d[1]]
-                },
-    {"name": "dictionary_entries", "symbols": ["_ml", "dictionary_entry", "_ml", {"literal":","}, "dictionary_entries"], "postprocess": 
-        d => [d[1], ...d[4]]
-                },
-    {"name": "dictionary_entry", "symbols": ["identifier", "_ml", {"literal":":"}, "_ml", "expression"], "postprocess": 
-        d => [d[0], d[4]]
-                },
     {"name": "boolean_literal", "symbols": [{"literal":"true"}], "postprocess": 
         d => ({
             type: "boolean_literal",
@@ -394,13 +362,12 @@ var grammar = {
             end: tokenEnd(d[0])
         })
                 },
-    {"name": "fun_expression", "symbols": [{"literal":"fun"}, "_", {"literal":"("}, "_", "parameter_list", "_", {"literal":")"}, "_", "code_block"], "postprocess": 
+    {"name": "boolean_literal", "symbols": [{"literal":"maybe"}], "postprocess": 
         d => ({
-            type: "fun_expression",
-            parameters: d[4],
-            body: d[8],
+            type: "boolean_literal",
+            value: maybe,
             start: tokenStart(d[0]),
-            end: d[8].end
+            end: tokenEnd(d[0])
         })
                 },
     {"name": "line_comment", "symbols": [(lexer.has("comment") ? {type: "comment"} : comment)], "postprocess": convertTokenId},
@@ -408,19 +375,30 @@ var grammar = {
     {"name": "number", "symbols": [(lexer.has("number_literal") ? {type: "number_literal"} : number_literal)], "postprocess": convertTokenId},
     {"name": "identifier", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": convertTokenId},
-    {"name": "identifier_or_keyword", "symbols": [{"literal":"fun"}], "postprocess": convertTokenId},
-    {"name": "identifier_or_keyword", "symbols": [{"literal":"proc"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"fn"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"while"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"for"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"else"}], "postprocess": convertTokenId},
-    {"name": "identifier_or_keyword", "symbols": [{"literal":"in"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"if"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"return"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"and"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"or"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"true"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"false"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"maybe"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"delete"}], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": ["identifier_or_keyword"], "postprocess": id},
+    {"name": "deletable", "symbols": [(lexer.has("plus") ? {type: "plus"} : plus)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("minus") ? {type: "minus"} : minus)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("multiply") ? {type: "multiply"} : multiply)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("divide") ? {type: "divide"} : divide)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("modulo") ? {type: "modulo"} : modulo)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("gt") ? {type: "gt"} : gt)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("gte") ? {type: "gte"} : gte)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("lt") ? {type: "lt"} : lt)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("lte") ? {type: "lte"} : lte)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("eq") ? {type: "eq"} : eq)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("assignment") ? {type: "assignment"} : assignment)], "postprocess": convertTokenId},
     {"name": "_ml$ebnf$1", "symbols": []},
     {"name": "_ml$ebnf$1", "symbols": ["_ml$ebnf$1", "multi_line_ws_char"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "_ml", "symbols": ["_ml$ebnf$1"]},

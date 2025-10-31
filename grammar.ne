@@ -38,9 +38,8 @@ const lexer = moo.compile({
     identifier: {
         match: /[a-z_][a-z_0-9]*/,
         type: moo.keywords({
-            fun: "fun",
-            proc: "proc",
             while: "while",
+            fn: "fn",
             for: "for",
             else: "else",
             in: "in",
@@ -50,6 +49,7 @@ const lexer = moo.compile({
             or: "or",
             true: "true",
             false: "false",
+            maybe: "maybe",
             delete: "delete"
         })
     }
@@ -87,6 +87,7 @@ function convertTokenId(data) {
     return convertToken(data[0]);
 }
 
+
 %}
 
 @lexer lexer
@@ -116,19 +117,12 @@ top_level_statements
         %}
 
 top_level_statement
-    -> fun_definition    {% id %}
-    |  print_statement  {% id %}
-    |  proc_definition   {% id %}
-    |  line_comment     {% id %}
-    |  call_statement   {% id %}
-    |  while_loop       {% id %}
-    |  delete_statement {% id %}
+    -> fun_definition        {% id %}
+    |  executable_statement {% id %}
 
-print_statement
-    -> "print" __ "(" _ expression _ ")"
 
 fun_definition
-    -> "fun" __ identifier _ "(" _ parameter_list _ ")" _ code_block
+    -> "fn" _ identifier _ "(" _ parameter_list _ ")" _ code_block
         {%
             d => ({
                 type: "fun_definition",
@@ -140,20 +134,6 @@ fun_definition
             })
         %}
 
-proc_definition
-    -> "proc" __ identifier _ "(" _ parameter_list _ ")" _ code_block
-        {%
-            d => ({
-                type: "proc_definition",
-                name: d[2],
-                parameters: d[6],
-                body: d[10],
-                start: tokenStart(d[0]),
-                end: d[10].end
-            })
-        %}
-
-
 parameter_list
     -> null        {% () => [] %}
     | identifier   {% d => [d[0]] %}
@@ -162,7 +142,7 @@ parameter_list
             d => [d[0], ...d[4]]
         %}
 
-code_block -> "[" executable_statements "]"
+code_block -> "{" executable_statements "}"
     {%
         (d) => ({
             type: "code_block",
@@ -187,15 +167,20 @@ executable_statements
 executable_statement
    -> return_statement     {% id %}
    |  var_assignment       {% id %}
+   |  var_initialization   {% id %}
    |  call_statement       {% id %}
    |  line_comment         {% id %}
    |  indexed_assignment   {% id %}
    |  while_loop           {% id %}
    |  if_statement         {% id %}
-   |  for_loop             {% id %}
+   |  print_statement      {% id %}
+   |  delete_statement     {% id %}
+
+print_statement
+    -> "print" __ "(" _ expression _ ")"
 
 delete_statement
-   -> "delete" __ identifier_or_keyword 
+   -> "delete" __ deletable 
         {%
             d => ({
                 type: "delete_statement",
@@ -215,6 +200,18 @@ return_statement
                end: d[2].end
            })
        %}
+
+var_initialization
+    -> "naprimjer" _ identifier _ "=" _ expression
+        {%
+            d => ({
+                type: "var_initialization",
+                var_name: d[2],
+                value: d[6],
+                start: d[0].start,
+                end: d[6].end
+            })
+        %}
 
 var_assignment
     -> identifier _ "=" _ expression
@@ -315,19 +312,6 @@ if_statement
             })
        %}
 
-for_loop
-    -> "for" __ identifier __ "in" __ expression _ code_block
-        {%
-            d => ({
-                type: "for_loop",
-                loop_variable: d[2],
-                iterable: d[6],
-                body: d[8],
-                start: tokenStart(d[0]),
-                end: d[8].end
-            })
-        %}
-
 argument_list
     -> null {% () => [] %}
     |  _ expression _  {% d => [d[1]] %}
@@ -376,6 +360,7 @@ comparison_operator
     |  "<"   {% convertTokenId %}
     |  "<="  {% convertTokenId %}
     |  "=="  {% convertTokenId %}
+    |  "="   {% convertTokenId %}
 
 additive_expression
     -> multiplicative_expression    {% id %}
@@ -420,10 +405,8 @@ unary_expression
     |  call_expression      {% id %}
     |  string_literal       {% id %}
     |  list_literal         {% id %}
-    |  dictionary_literal   {% id %}
     |  boolean_literal      {% id %}
     |  indexed_access       {% id %}
-    |  fun_expression       {% id %}
     |  "(" expression ")"
         {%
             data => data[1]
@@ -453,34 +436,6 @@ list_items
             ]
         %}
 
-dictionary_literal
-    -> "{" dictionary_entries "}"
-        {%
-            d => ({
-                type: "dictionary_literal",
-                entries: d[1],
-                start: tokenStart(d[0]),
-                end: tokenEnd(d[2])
-            })
-        %}
-
-dictionary_entries
-    -> null  {% () => [] %}
-    |  _ml dictionary_entry _ml
-        {%
-            d => [d[1]]
-        %}
-    |  _ml dictionary_entry _ml "," dictionary_entries
-        {%
-            d => [d[1], ...d[4]]
-        %}
-
-dictionary_entry
-    -> identifier _ml ":" _ml expression
-        {%
-            d => [d[0], d[4]]
-        %}
-
 boolean_literal
     -> "true"
         {%
@@ -500,18 +455,16 @@ boolean_literal
                 end: tokenEnd(d[0])
             })
         %}
-
-fun_expression
-    -> "fun" _ "(" _ parameter_list _ ")" _ code_block
+    | "maybe"
         {%
             d => ({
-                type: "fun_expression",
-                parameters: d[4],
-                body: d[8],
+                type: "boolean_literal",
+                value: maybe,
                 start: tokenStart(d[0]),
-                end: d[8].end
+                end: tokenEnd(d[0])
             })
         %}
+
 
 line_comment -> %comment {% convertTokenId %}
 
@@ -522,20 +475,33 @@ number -> %number_literal {% convertTokenId %}
 identifier -> %identifier {% convertTokenId %}
 
 identifier_or_keyword
-    -> %identifier {% convertTokenId %}
-    |  "fun"       {% convertTokenId %}
-    |  "proc"      {% convertTokenId %}
+    -> %identifier  {% convertTokenId %}
+    |  "fn"        {% convertTokenId %}
     |  "while"     {% convertTokenId %}
     |  "for"       {% convertTokenId %}
     |  "else"      {% convertTokenId %}
-    |  "in"        {% convertTokenId %}
     |  "if"        {% convertTokenId %}
     |  "return"    {% convertTokenId %}
     |  "and"       {% convertTokenId %}
     |  "or"        {% convertTokenId %}
     |  "true"      {% convertTokenId %}
     |  "false"     {% convertTokenId %}
+    |  "maybe"     {% convertTokenId %}
     |  "delete"    {% convertTokenId %}
+
+deletable
+    -> identifier_or_keyword {% id %}
+    |  %plus                 {% convertTokenId %}
+    |  %minus                {% convertTokenId %}
+    |  %multiply             {% convertTokenId %}
+    |  %divide               {% convertTokenId %}
+    |  %modulo               {% convertTokenId %}
+    |  %gt                   {% convertTokenId %}
+    |  %gte                  {% convertTokenId %}
+    |  %lt                   {% convertTokenId %}
+    |  %lte                  {% convertTokenId %}
+    |  %eq                   {% convertTokenId %}
+    |  %assignment           {% convertTokenId %}
 
 _ml -> multi_line_ws_char:*
 
