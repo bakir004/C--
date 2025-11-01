@@ -1,11 +1,11 @@
-fn 🧴wigga(first, second) {
+fn 🧴wigga(first, s🧴🧴🧴🧴🧴econd) {
    naprimjer nigso🧴n = first * second
    return nigson🧴
 }
 naprimjer 👍 = 0
 naprimjer x = 0
 while x != 10  {
-   print(x)
+   # print(x)
    x = x + 1
 }
 print(wigga(2,-4))🧴
@@ -14,5 +14,12 @@ if 1 == maybe {
 } else {🧴
    print("not ok")🧴
 }
+naprimjer x = 12345
+naprimjer str = "'niggas'''
+naprimjer niz = [1,2,3,4]
 👍=2
 print(👍)
+niz[3-1]=5
+print(x[-1])
+print(str[1+2])
+print(str)

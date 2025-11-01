@@ -142,9 +142,19 @@ function transpile(node) {
         `${transpile(node.var_name)}=${transpile(node.value)}`
       );
     case "var_initialization":
+      // Handle both identifier and number_literal as variable names
+      // For numbers, convert to string for JavaScript variable name
+      const varNameValue =
+        node.var_name.type === "number_literal"
+          ? String(node.var_name.value)
+          : node.var_name.value;
+      const varNameCode =
+        node.var_name.type === "number_literal"
+          ? String(node.var_name.value)
+          : transpile(node.var_name);
       return wrapInDeletedChecker(
-        node.var_name.value,
-        `var ${transpile(node.var_name)}=${transpile(node.value)}`
+        varNameValue,
+        `var ${varNameCode}=${transpile(node.value)}`
       );
     case "boolean_literal":
       if (node.value === "maybe") return Math.random() < 0.5 ? "true" : "false";
@@ -153,15 +163,48 @@ function transpile(node) {
       return `"${node.value}"`;
     case "list_literal":
       return `[${node.items.map(transpile).join(",")}]`;
-    case "indexed_access":
-      return `${transpile(node.subject)}[${transpile(node.index)}]`;
-    case "indexed_assignment":
+    case "indexed_access": {
+      const subjectExpr = transpile(node.subject);
+      const indexExpr = transpile(node.index);
+      return `(() => {
+        const subject = ${subjectExpr};
+        if (Number.isInteger(subject)) {
+          // x[i] where i starts from -1, so x[-1] is 1st digit, x[0] is 2nd digit, etc.
+          const digits = Math.abs(subject).toString().split('').map(Number);
+          const idx = ${indexExpr} + 1; // Convert from -1-based to 0-based indexing
+          if (idx >= 0 && idx < digits.length) {
+            return digits[idx];
+          }
+          return undefined;
+        }
+        return subject[${indexExpr}+1];
+      })()`;
+    }
+    case "indexed_assignment": {
+      const subjectExpr = transpile(node.subject);
+      const indexExpr = transpile(node.index);
+      const valueExpr = transpile(node.value);
       return wrapInDeletedChecker(
         node.subject.value,
-        `${transpile(node.subject)}[${transpile(node.index)}]=${transpile(
-          node.value
-        )}`
+        `(() => {
+          const subject = ${subjectExpr};
+          if (Number.isInteger(subject)) {
+            // x[i] = val where i starts from -1, so x[-1] modifies 1st digit, x[0] modifies 2nd digit, etc.
+            const isNegative = subject < 0;
+            const digits = Math.abs(subject).toString().split('').map(Number);
+            const idx = ${indexExpr} + 1; // Convert from -1-based to 0-based indexing
+            if (idx >= 0 && idx < digits.length) {
+              const newDigit = Math.floor(Math.abs(${valueExpr})) % 10; // Ensure single digit
+              digits[idx] = newDigit;
+              const newValue = parseInt(digits.join(''));
+              return isNegative ? -newValue : newValue;
+            }
+            return subject;
+          }
+          subject[${indexExpr}+1] = ${valueExpr};
+        })()`
       );
+    }
     case "binary_operation":
       if (node.operator.value === "====")
         return (

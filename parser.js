@@ -37,8 +37,10 @@ const lexer = moo.compile({
         value: s => s.substring(1)
     },
     string_literal: {
-        match: /"(?:[^\n\\"]|\\["\\ntbfr])*"/,
-        value: s => JSON.parse(s)
+        // Match string starting with any mix of " or ', followed by content, ending with any mix of " or '
+        // Allows mixed quotes like "word' or 'word"
+        match: /["']+(?:[^"'\n\\]|\\.)*?["']+/,
+        value: s => s
     },
     number_literal: {
         match: /[0-9]+(?:\.[0-9]+)?/,
@@ -175,6 +177,15 @@ var grammar = {
         })
                },
     {"name": "var_initialization", "symbols": [{"literal":"naprimjer"}, "_", "identifier", "_", {"literal":"="}, "_", "expression"], "postprocess": 
+        d => ({
+            type: "var_initialization",
+            var_name: d[2],
+            value: d[6],
+            start: d[0].start,
+            end: d[6].end
+        })
+                },
+    {"name": "var_initialization", "symbols": [{"literal":"naprimjer"}, "_", "number", "_", {"literal":"="}, "_", "expression"], "postprocess": 
         d => ({
             type: "var_initialization",
             var_name: d[2],
@@ -380,7 +391,73 @@ var grammar = {
         })
                 },
     {"name": "line_comment", "symbols": [(lexer.has("comment") ? {type: "comment"} : comment)], "postprocess": convertTokenId},
-    {"name": "string_literal", "symbols": [(lexer.has("string_literal") ? {type: "string_literal"} : string_literal)], "postprocess": convertTokenId},
+    {"name": "string_literal", "symbols": [(lexer.has("string_literal") ? {type: "string_literal"} : string_literal)], "postprocess": 
+        d => {
+            const token = convertToken(d[0]);
+            const s = token.value;
+            // Count actual quote characters on each side (for slicing)
+            let openQuoteCharCount = 0;
+            let i = 0;
+            while (i < s.length && (s[i] === '"' || s[i] === "'")) {
+                openQuoteCharCount++;
+                i++;
+            }
+            
+            let closeQuoteCharCount = 0;
+            let j = s.length - 1;
+            while (j >= 0 && (s[j] === '"' || s[j] === "'")) {
+                closeQuoteCharCount++;
+                j--;
+            }
+            
+            // Calculate weighted counts for validation (double quotes count as 2, single as 1)
+            let openQuoteCount = 0;
+            for (let k = 0; k < openQuoteCharCount; k++) {
+                if(s[k] === '"')
+                    openQuoteCount += 2;
+                else if(s[k] === "'")
+                    openQuoteCount += 1;
+            }
+            
+            let closeQuoteCount = 0;
+            for (let k = s.length - closeQuoteCharCount; k < s.length; k++) {
+                if(s[k] === '"')
+                    closeQuoteCount += 2;
+                else if(s[k] === "'")
+                    closeQuoteCount += 1;
+            }
+            
+            // Validate that total quote count matches on both sides
+            if (openQuoteCount === 0 || closeQuoteCount === 0 || openQuoteCount !== closeQuoteCount) {
+                throw new Error(`String literal quotes don't match: ${openQuoteCount} opening quotes but ${closeQuoteCount} closing quotes`);
+            }
+            
+            // Remove quotes and parse escape sequences
+            const content = closeQuoteCharCount > 0 
+                ? s.slice(openQuoteCharCount, -closeQuoteCharCount)
+                : s.slice(openQuoteCharCount);
+            const parsed = content.replace(/\\(?:["'\\ntbfr]|u([0-9a-fA-F]{4}))/g, (match, hex) => {
+                if (hex) return String.fromCharCode(parseInt(hex, 16));
+                const escapeMap = {
+                    '\\"': '"',
+                    "\\'": "'",
+                    '\\\\': '\\',
+                    '\\n': '\n',
+                    '\\t': '\t',
+                    '\\b': '\b',
+                    '\\f': '\f',
+                    '\\r': '\r'
+                };
+                return escapeMap[match] || match;
+            });
+            return {
+                type: token.type,
+                value: parsed,
+                start: token.start,
+                end: token.end
+            };
+        }
+                },
     {"name": "number", "symbols": [(lexer.has("number_literal") ? {type: "number_literal"} : number_literal)], "postprocess": convertTokenId},
     {"name": "identifier", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": convertTokenId},
