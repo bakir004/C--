@@ -4,6 +4,7 @@
 
 ### Todo List
 
+- [ ] Unarni - uz identifier (naprimjer -b+2)
 - [ ] Operatori se random mijenjaju, gdje stavljanje vise operatora smanjuje sansu izmjene
 - [ ] Dijeljenje sa nulom vraca mozda
 - [x] Maybe kljucna rijec

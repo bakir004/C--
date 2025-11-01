@@ -112,7 +112,7 @@ function checkIndentationsDivisibleBy3(code) {
   }
 }
 
-checkIndentationsDivisibleBy3(code);
+// checkIndentationsDivisibleBy3(code);
 
 // console.log(JSON.stringify(parser.results[0], null, 2));
 
@@ -253,7 +253,13 @@ function transpile(node) {
           removeStartEndAndStringify(node.left) !==
           removeStartEndAndStringify(node.right)
         );
-      const operatorValue = node.operator.value.toString();
+      // Convert 'and' to '&&' and 'or' to '||'
+      let operatorValue = node.operator.value.toString();
+      if (operatorValue === "and") {
+        operatorValue = "&&";
+      } else if (operatorValue === "or") {
+        operatorValue = "||";
+      }
       const leftExpr = transpile(node.left);
       const rightExpr = transpile(node.right);
       const fullExpr = `${leftExpr}${operatorValue}${rightExpr}`;

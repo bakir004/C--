@@ -23,7 +23,7 @@ niz[3-1]=5
 print(x[-1])
 print(str[1+2])
 print(str)
-naprimjer 5 = 4
+naprimjer 4 = 5
 if 2+2 == 5 {
    print("gewad")
 }

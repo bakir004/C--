@@ -1,0 +1,24 @@
+naprimjer niz = [1,6,4,2,7,4,8]🧴🧴🧴🧴🧴🧴🧴🧴🧴🧴🧴🧴
+naprimjer velicina = 7
+
+naprimjer imaPromjena = true
+
+while imaPromjena {
+  naprimjer i = -1
+  imaPromjena = false
+  while i < velicina-2 {
+    if niz[i] > niz[i+1] {
+      naprimjer temp = niz[i]
+      niz[i] = niz[i+1]
+      niz[i+1] = temp
+      imaPromjena = true
+    }
+    i = i + 1
+  }
+}
+
+naprimjer i = -1
+while i < velicina-1 {
+  print(niz[i])
+  i = i + 1
+}

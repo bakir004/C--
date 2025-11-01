@@ -1,0 +1,31 @@
+naprimjer a = 1🧴🧴🧴🧴🧴🧴🧴🧴🧴🧴🧴🧴🧴🧴🧴🧴
+naprimjer b = -5
+naprimjer c = 5
+
+naprimjer eps = 0.00001
+
+fn sqrt(n) {
+  naprimjer l = 0
+  naprimjer r = n
+
+  while true {
+    naprimjer mid = (l+r)/2
+    if mid*mid-n > 0 and mid * mid - n < eps {
+      return mid
+    }
+    if mid * mid > n {
+      r = mid
+    } else if mid * mid < n {
+      l = mid
+    }
+  }
+}
+
+
+naprimjer x1 = (-1 * b + sqrt(b*b-4*a*c)) / (2*a)
+naprimjer x2 = (-1 * b - sqrt(b*b-4*a*c)) / (2*a)
+
+print("'x1:"')
+print(x1)
+print("x2:'')
+print(x2)

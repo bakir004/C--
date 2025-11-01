@@ -12,8 +12,9 @@ const lexer = moo.compile({
     eq: "==",
     neq: "!=",
     gte: ">=",
-    lt: "<",
     gt: ">",
+    lte: "<=",
+    lt: "<",
     lparan: "(",
     rparan: ")",
     comma: ",",
@@ -43,7 +44,7 @@ const lexer = moo.compile({
         value: s => Number(s)
     },
     identifier: {
-        match: /[a-z_][a-z_0-9]*/,
+        match: /[a-zA-Z_][a-zA-Z_0-9]*/,
         type: moo.keywords({
             while: "while",
             fn: "fn",
