@@ -8,11 +8,16 @@ const moo = require("moo");
 const lexer = moo.compile({
     ws: /[ \t]+/,
     nl: { match: "\n", lineBreaks: true },
-    lte: "<=",
+    // Order matters: "<=",
     lt: "<",
     gte: ">=",
     gt: ">",
     eq: "==",
+    streq: "===",
+    exstreq: "====",
+    neq: "!=",
+    strneq: "!==",
+    exstrneq: "!===",
     lparan: "(",
     rparan: ")",
     comma: ",",
@@ -289,7 +294,11 @@ var grammar = {
     {"name": "comparison_operator", "symbols": [{"literal":"<"}], "postprocess": convertTokenId},
     {"name": "comparison_operator", "symbols": [{"literal":"<="}], "postprocess": convertTokenId},
     {"name": "comparison_operator", "symbols": [{"literal":"=="}], "postprocess": convertTokenId},
-    {"name": "comparison_operator", "symbols": [{"literal":"="}], "postprocess": convertTokenId},
+    {"name": "comparison_operator", "symbols": [{"literal":"==="}], "postprocess": convertTokenId},
+    {"name": "comparison_operator", "symbols": [{"literal":"===="}], "postprocess": convertTokenId},
+    {"name": "comparison_operator", "symbols": [{"literal":"!="}], "postprocess": convertTokenId},
+    {"name": "comparison_operator", "symbols": [{"literal":"!=="}], "postprocess": convertTokenId},
+    {"name": "comparison_operator", "symbols": [{"literal":"!==="}], "postprocess": convertTokenId},
     {"name": "additive_expression", "symbols": ["multiplicative_expression"], "postprocess": id},
     {"name": "additive_expression", "symbols": ["multiplicative_expression", "_", /[+-]/, "_", "additive_expression"], "postprocess": 
         d => ({
@@ -313,7 +322,7 @@ var grammar = {
         })
                 },
     {"name": "unary_expression", "symbols": ["number"], "postprocess": id},
-    {"name": "unary_expression", "symbols": [{"literal":"-"}, "number"], "postprocess": d => ({ type: "unary_minus", value: d[1] })},
+    {"name": "unary_expression", "symbols": [{"literal":"-"}, "number"], "postprocess": d => {d[1].value = -d[1].value; return d[1]}},
     {"name": "unary_expression", "symbols": ["identifier"], "postprocess": 
         d => ({
             type: "var_reference",
@@ -365,7 +374,7 @@ var grammar = {
     {"name": "boolean_literal", "symbols": [{"literal":"maybe"}], "postprocess": 
         d => ({
             type: "boolean_literal",
-            value: maybe,
+            value: Math.random() < 0.5,
             start: tokenStart(d[0]),
             end: tokenEnd(d[0])
         })
@@ -387,6 +396,8 @@ var grammar = {
     {"name": "identifier_or_keyword", "symbols": [{"literal":"false"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"maybe"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"delete"}], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": ["number"], "postprocess": id},
+    {"name": "deletable", "symbols": [{"literal":"-"}, "number"], "postprocess": d => {d[1].value = -d[1].value; return d[1]}},
     {"name": "deletable", "symbols": ["identifier_or_keyword"], "postprocess": id},
     {"name": "deletable", "symbols": [(lexer.has("plus") ? {type: "plus"} : plus)], "postprocess": convertTokenId},
     {"name": "deletable", "symbols": [(lexer.has("minus") ? {type: "minus"} : minus)], "postprocess": convertTokenId},
@@ -398,6 +409,11 @@ var grammar = {
     {"name": "deletable", "symbols": [(lexer.has("lt") ? {type: "lt"} : lt)], "postprocess": convertTokenId},
     {"name": "deletable", "symbols": [(lexer.has("lte") ? {type: "lte"} : lte)], "postprocess": convertTokenId},
     {"name": "deletable", "symbols": [(lexer.has("eq") ? {type: "eq"} : eq)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("neq") ? {type: "neq"} : neq)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("streq") ? {type: "streq"} : streq)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("strneq") ? {type: "strneq"} : strneq)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("exstreq") ? {type: "exstreq"} : exstreq)], "postprocess": convertTokenId},
+    {"name": "deletable", "symbols": [(lexer.has("exstrneq") ? {type: "exstrneq"} : exstrneq)], "postprocess": convertTokenId},
     {"name": "deletable", "symbols": [(lexer.has("assignment") ? {type: "assignment"} : assignment)], "postprocess": convertTokenId},
     {"name": "_ml$ebnf$1", "symbols": []},
     {"name": "_ml$ebnf$1", "symbols": ["_ml$ebnf$1", "multi_line_ws_char"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},

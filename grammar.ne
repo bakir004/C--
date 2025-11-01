@@ -4,11 +4,16 @@ const moo = require("moo");
 const lexer = moo.compile({
     ws: /[ \t]+/,
     nl: { match: "\n", lineBreaks: true },
-    lte: "<=",
+    // Order matters: "<=",
     lt: "<",
     gte: ">=",
     gt: ">",
     eq: "==",
+    streq: "===",
+    exstreq: "====",
+    neq: "!=",
+    strneq: "!==",
+    exstrneq: "!===",
     lparan: "(",
     rparan: ")",
     comma: ",",
@@ -355,12 +360,16 @@ comparison_expression
         %}
 
 comparison_operator
-    -> ">"   {% convertTokenId %}
-    |  ">="  {% convertTokenId %}
-    |  "<"   {% convertTokenId %}
-    |  "<="  {% convertTokenId %}
-    |  "=="  {% convertTokenId %}
-    |  "="   {% convertTokenId %}
+    -> ">"    {% convertTokenId %}
+    |  ">="   {% convertTokenId %}
+    |  "<"    {% convertTokenId %}
+    |  "<="   {% convertTokenId %}
+    |  "=="   {% convertTokenId %}
+    |  "==="  {% convertTokenId %}
+    |  "====" {% convertTokenId %}
+    |  "!="   {% convertTokenId %}
+    |  "!=="  {% convertTokenId %}
+    |  "!===" {% convertTokenId %}
 
 additive_expression
     -> multiplicative_expression    {% id %}
@@ -392,7 +401,7 @@ multiplicative_expression
 
 unary_expression
     -> number               {% id %}
-    | "-" number            {% d => ({ type: "unary_minus", value: d[1] }) %}
+    | "-" number            {% d => {d[1].value = -d[1].value; return d[1]} %}
     |  identifier
         {%
             d => ({
@@ -459,7 +468,7 @@ boolean_literal
         {%
             d => ({
                 type: "boolean_literal",
-                value: maybe,
+                value: Math.random() < 0.5,
                 start: tokenStart(d[0]),
                 end: tokenEnd(d[0])
             })
@@ -490,7 +499,9 @@ identifier_or_keyword
     |  "delete"    {% convertTokenId %}
 
 deletable
-    -> identifier_or_keyword {% id %}
+    -> number                {% id %}
+    |  "-" number            {% d => {d[1].value = -d[1].value; return d[1]} %}
+    |  identifier_or_keyword  {% id %}
     |  %plus                 {% convertTokenId %}
     |  %minus                {% convertTokenId %}
     |  %multiply             {% convertTokenId %}
@@ -501,6 +512,11 @@ deletable
     |  %lt                   {% convertTokenId %}
     |  %lte                  {% convertTokenId %}
     |  %eq                   {% convertTokenId %}
+    |  %neq                  {% convertTokenId %}
+    |  %streq                {% convertTokenId %}
+    |  %strneq               {% convertTokenId %}
+    |  %exstreq              {% convertTokenId %}
+    |  %exstrneq             {% convertTokenId %}
     |  %assignment           {% convertTokenId %}
 
 _ml -> multi_line_ws_char:*

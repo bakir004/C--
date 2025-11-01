@@ -1,9 +1,18 @@
-delete - 
 fn 🧴wigga(first, second) {
-  naprimjer nigso🧴n = first * second
-  return nigson🧴
+   naprimjer nigso🧴n = first * second
+   return nigson🧴
 }
-while 3 > 5 {
-  print(2)
+naprimjer 👍 = 0
+naprimjer x = 0
+while x != 10  {
+   print(x)
+   x = x + 1
 }
 print(wigga(2,-4))🧴
+if 1 == maybe {
+   print("ok")
+} else {🧴
+   print("not ok")🧴
+}
+👍=2
+print(👍)
