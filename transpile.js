@@ -253,6 +253,17 @@ function transpile(node) {
           removeStartEndAndStringify(node.left) !==
           removeStartEndAndStringify(node.right)
         );
+      // Handle single = comparison - checks if rounded numeric values are equal
+      if (node.operator.value === "=") {
+        const leftExpr = transpile(node.left);
+        const rightExpr = transpile(node.right);
+        return `(() => {
+          let leftVal = Number(${leftExpr});
+          let rightVal = Number(${rightExpr});
+          if(isNaN(leftVal) || isNaN(rightVal)){return false;}
+          return Math.round(leftVal) === Math.round(rightVal);
+        })()`;
+      }
       // Convert 'and' to '&&' and 'or' to '||'
       let operatorValue = node.operator.value.toString();
       if (operatorValue === "and") {

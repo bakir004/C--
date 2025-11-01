@@ -28,3 +28,5 @@ if 2+2 == 5 {
    print("gewad")
 }
 print(3 / 0)
+print(3 = "3.14")
+print(''"9.81'"' = 10)

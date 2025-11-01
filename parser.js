@@ -305,6 +305,7 @@ var grammar = {
     {"name": "comparison_operator", "symbols": [{"literal":">="}], "postprocess": convertTokenId},
     {"name": "comparison_operator", "symbols": [{"literal":"<"}], "postprocess": convertTokenId},
     {"name": "comparison_operator", "symbols": [{"literal":"<="}], "postprocess": convertTokenId},
+    {"name": "comparison_operator", "symbols": [{"literal":"="}], "postprocess": convertTokenId},
     {"name": "comparison_operator", "symbols": [{"literal":"=="}], "postprocess": convertTokenId},
     {"name": "comparison_operator", "symbols": [{"literal":"==="}], "postprocess": convertTokenId},
     {"name": "comparison_operator", "symbols": [{"literal":"===="}], "postprocess": convertTokenId},

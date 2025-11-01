@@ -377,6 +377,7 @@ comparison_operator
     |  ">="   {% convertTokenId %}
     |  "<"    {% convertTokenId %}
     |  "<="   {% convertTokenId %}
+    |  "="    {% convertTokenId %}
     |  "=="   {% convertTokenId %}
     |  "==="  {% convertTokenId %}
     |  "====" {% convertTokenId %}
