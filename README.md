@@ -11,7 +11,7 @@ Todo lista:
 [x] Bug spray emoji
 [x] Emojiji mogu biti identifikatori
 [x] Nizovi se indeksiraju od -1
-[ ] Redefinisanje brojeva: let 5 = 4 (sada gdjegod je 5 zapravo je 4)
+[x] Redefinisanje brojeva: let 5 = 4 (sada gdjegod je 5 zapravo je 4)
 [ ] Floatovi za indekse u nizu
 [ ] Poredjenje sa jednim znakom =
 [x] ==, ===, ====, !=, !==, !===
