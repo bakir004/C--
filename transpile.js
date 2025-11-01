@@ -114,11 +114,20 @@ function checkIndentationsDivisibleBy3(code) {
 
 checkIndentationsDivisibleBy3(code);
 
-console.log(JSON.stringify(parser.results[0], null, 2));
+// console.log(JSON.stringify(parser.results[0], null, 2));
 
-let finalCode = `const deletedIdentifiers = new Set();\n`;
-
+let finalCode = `const deletedIdentifiers = new Set();\nconst redefinedNumbers = {}\n`;
+let finalNode, finalNode2;
 function transpile(node) {
+  if (node === undefined) {
+    console.error("Undefined node");
+    console.log(finalNode);
+    console.log(finalNode2);
+    return "";
+  }
+  finalNode2 = finalNode;
+  finalNode = node;
+
   switch (node.type) {
     case "fun_definition":
       return (
@@ -137,24 +146,52 @@ function transpile(node) {
     case "code_block":
       return `{${node.statements.map(transpile).join("\n")}}`;
     case "var_assignment":
+      // var_name is a token object, use .value directly
+      if (!node.var_name || !node.var_name.value) {
+        console.error(
+          "var_assignment missing var_name:",
+          JSON.stringify(node, null, 2)
+        );
+        return "";
+      }
+      if (!node.value) {
+        console.error(
+          "var_assignment missing value:",
+          JSON.stringify(node, null, 2)
+        );
+        return "";
+      }
       return wrapInDeletedChecker(
         node.var_name.value,
-        `${transpile(node.var_name)}=${transpile(node.value)}`
+        `${node.var_name.value}=${transpile(node.value)}`
       );
     case "var_initialization":
       // Handle both identifier and number_literal as variable names
-      // For numbers, convert to string for JavaScript variable name
-      const varNameValue =
-        node.var_name.type === "number_literal"
-          ? String(node.var_name.value)
-          : node.var_name.value;
-      const varNameCode =
-        node.var_name.type === "number_literal"
-          ? String(node.var_name.value)
-          : transpile(node.var_name);
+      if (!node.value) {
+        console.error(
+          "var_initialization missing value:",
+          JSON.stringify(node, null, 2)
+        );
+        return "";
+      }
+      if (node.var_name && node.var_name.type === "number_literal") {
+        const varNameValue = node.var_name.value.toString();
+        return wrapInDeletedChecker(
+          varNameValue,
+          `redefinedNumbers["${varNameValue}"] = ${transpile(node.value)}`
+        );
+      }
+      // Identifier case - var_name is a token object, use .value directly
+      if (!node.var_name || !node.var_name.value) {
+        console.error(
+          "var_initialization missing var_name:",
+          JSON.stringify(node, null, 2)
+        );
+        return "";
+      }
       return wrapInDeletedChecker(
-        varNameValue,
-        `var ${varNameCode}=${transpile(node.value)}`
+        node.var_name.value,
+        `var ${node.var_name.value}=${transpile(node.value)}`
       );
     case "boolean_literal":
       if (node.value === "maybe") return Math.random() < 0.5 ? "true" : "false";
@@ -225,10 +262,14 @@ function transpile(node) {
         operatorValue,
         `let result = ${fullExpr}; 
          if(deletedIdentifiers.has(result.toString())){throw new Error(\`$\{result\} was deleted\`)};
+         if(redefinedNumbers.hasOwnProperty(result.toString())){return redefinedNumbers[result.toString()]};
          return result`
       )}})()`;
     case "number_literal":
-      return node.value;
+      return `(() => {
+        if(redefinedNumbers.hasOwnProperty(${node.value.toString()})){return redefinedNumbers[${node.value.toString()}]};
+        return ${node.value.toString()}
+      })()`;
     case "return_statement":
       return wrapInDeletedChecker("return", `return ${transpile(node.value)}`);
     case "var_reference":
@@ -266,14 +307,23 @@ function transpile(node) {
         `deletedIdentifiers.add("${transpile(node.identifier)}");`
       );
     case "if_statement":
-      return wrapInDeletedChecker(
-        "if",
-        `if(${transpile(node.condition)})\n${transpile(
-          node.consequent
-        )}\nelse\n${(() => {
-          return `{${wrapInDeletedChecker("else", transpile(node.alternate))}}`;
-        })()}`
-      );
+      const consequentCode = transpile(node.consequent);
+      if (node.alternate) {
+        return wrapInDeletedChecker(
+          "if",
+          `if(${transpile(
+            node.condition
+          )})\n${consequentCode}\nelse\n{${wrapInDeletedChecker(
+            "else",
+            transpile(node.alternate)
+          )}}`
+        );
+      } else {
+        return wrapInDeletedChecker(
+          "if",
+          `if(${transpile(node.condition)})\n${consequentCode}`
+        );
+      }
     default:
       console.error("Undefined node: " + JSON.stringify(node, null, 2));
   }
