@@ -27,3 +27,4 @@ naprimjer 4 = 5
 if 2+2 == 5 {
    print("gewad")
 }
+print(3 / 0)

@@ -262,6 +262,20 @@ function transpile(node) {
       }
       const leftExpr = transpile(node.left);
       const rightExpr = transpile(node.right);
+
+      if (operatorValue === "/") {
+        const fullExpr = `${leftExpr}${operatorValue}${rightExpr}`;
+        return `(() => {${wrapInDeletedChecker(
+          operatorValue,
+          `let rightOperand = ${rightExpr};
+           if(rightOperand === 0){return Math.random() < 0.5 ? 0 : 1;}
+           let result = ${fullExpr}; 
+           if(deletedIdentifiers.has(result.toString())){throw new Error(\`$\{result\} was deleted\`)};
+           if(redefinedNumbers.hasOwnProperty(result.toString())){return redefinedNumbers[result.toString()]};
+           return result`
+        )}})()`;
+      }
+
       const fullExpr = `${leftExpr}${operatorValue}${rightExpr}`;
 
       return `(() => {${wrapInDeletedChecker(
