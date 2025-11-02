@@ -1,5 +1,5 @@
 fn 🧴wigga(first, s🧴🧴🧴🧴🧴econd) {
-   naprimjer nigso🧴n = first * second
+   naprimjer nigso🧴n 🧴🧴🧴🧴🧴🧴🧴🧴🧴= first * second
    return nigson🧴
 }
 naprimjer 👍 = 0
@@ -19,9 +19,6 @@ naprimjer str = "'niggas'''
 naprimjer niz = [1,2,3,4]
 👍=2
 print(👍)
-print(x[-1])
-print(str[1+2])
-print(str)
 naprimjer 4 = 5
 if 2+2 == 5 {
    print("gewad")
@@ -29,3 +26,22 @@ if 2+2 == 5 {
 print(3 / 0)
 print(3 = "3.14")
 print(''"9.81'"' = 10)
+x = 987654321
+naprimjer trenutniX = 10
+print(prosli trenutniX)
+print(niz)
+print(x)
+x[6] = 6
+print(x)
+
+print(str)
+str[-1] = 'g'
+print(str)
+
+niz = [1,2,3,4,5,6,7]
+niz[-1] = 10
+print(niz)
+niz[4] = 10
+print(niz)
+niz[-0.5] = 1
+print(niz)

@@ -5,7 +5,6 @@
 ### Todo List
 
 - [ ] Unarni - uz identifier (naprimjer -b+2)
-- [ ] Operatori se random mijenjaju, gdje stavljanje vise operatora smanjuje sansu izmjene
 - [x] Dijeljenje sa nulom vraca mozda
 - [x] Maybe kljucna rijec
 - [x] Deletanje kljucnih rijeci, identifikatora, operatora
@@ -18,6 +17,10 @@
 - [x] Poredjenje sa jednim znakom =
 - [x] ==, ===, ====, !=, !==, !===
 - [x] Za stringove se moze staviti bilo koji broj ' ili ", i to redoslijed niti tip nije bitan, jedino broj navodnika
-- [ ] Za stringove se moze staviti 0 navodnika (tesko, potrebna semanticka analiza)
 - [x] Intovi su nizovi cifara
-- [ ] Kljucne rijeci previous, next i current
+- [x] Kljucne rijeci previous i current (za future bi morali sve naizvrat okrenut sto se tice kompajliranja)
+
+Ostale ideje:
+
+- [ ] Operatori se random mijenjaju, gdje stavljanje vise operatora smanjuje sansu izmjene
+- [ ] Za stringove se moze staviti 0 navodnika (tesko, potrebna semanticka analiza)

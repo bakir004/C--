@@ -63,7 +63,9 @@ const lexer = moo.compile({
             false: "false",
             maybe: "maybe",
             delete: "delete",
-            sizeof: "sizeof"
+            sizeof: "sizeof",
+            prosli: "prosli",
+            trenutni: "trenutni",
         })
     }
 });
@@ -345,6 +347,22 @@ var grammar = {
             end: d[2].end
         })
                 },
+    {"name": "unary_expression", "symbols": [{"literal":"prosli"}, "__", "identifier"], "postprocess": 
+        d => ({
+            type: "prosli",
+            identifier: d[2],
+            start: tokenStart(d[0]),
+            end: d[2].end
+        })
+                },
+    {"name": "unary_expression", "symbols": [{"literal":"trenutni"}, "__", "identifier"], "postprocess": 
+        d => ({
+            type: "trenutni",
+            identifier: d[2],
+            start: tokenStart(d[0]),
+            end: d[2].end
+        })
+                },
     {"name": "unary_expression", "symbols": ["identifier"], "postprocess": 
         d => ({
             type: "var_reference",
@@ -484,6 +502,8 @@ var grammar = {
     {"name": "identifier_or_keyword", "symbols": [{"literal":"false"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"maybe"}], "postprocess": convertTokenId},
     {"name": "identifier_or_keyword", "symbols": [{"literal":"delete"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"trenutni"}], "postprocess": convertTokenId},
+    {"name": "identifier_or_keyword", "symbols": [{"literal":"prosli"}], "postprocess": convertTokenId},
     {"name": "deletable", "symbols": ["number"], "postprocess": id},
     {"name": "deletable", "symbols": [{"literal":"-"}, "number"], "postprocess": d => {d[1].value = -d[1].value; return d[1]}},
     {"name": "deletable", "symbols": ["identifier_or_keyword"], "postprocess": id},

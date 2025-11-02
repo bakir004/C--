@@ -59,7 +59,9 @@ const lexer = moo.compile({
             false: "false",
             maybe: "maybe",
             delete: "delete",
-            sizeof: "sizeof"
+            sizeof: "sizeof",
+            prosli: "prosli",
+            trenutni: "trenutni",
         })
     }
 });
@@ -426,7 +428,25 @@ unary_expression
                 end: d[2].end
             })
         %}
-    |  identifier
+    | "prosli" __ identifier
+        {%
+            d => ({
+                type: "prosli",
+                identifier: d[2],
+                start: tokenStart(d[0]),
+                end: d[2].end
+            })
+        %}
+    | "trenutni" __ identifier
+        {%
+            d => ({
+                type: "trenutni",
+                identifier: d[2],
+                start: tokenStart(d[0]),
+                end: d[2].end
+            })
+        %}
+    | identifier
         {%
             d => ({
                 type: "var_reference",
@@ -589,6 +609,8 @@ identifier_or_keyword
     |  "false"     {% convertTokenId %}
     |  "maybe"     {% convertTokenId %}
     |  "delete"    {% convertTokenId %}
+    |  "trenutni"  {% convertTokenId %}
+    |  "prosli"    {% convertTokenId %}
 
 deletable
     -> number                {% id %}
