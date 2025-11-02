@@ -22,5 +22,4 @@
 
 Ostale ideje:
 
-- [ ] Operatori se random mijenjaju, gdje stavljanje vise operatora smanjuje sansu izmjene
 - [x] Za stringove se moze staviti 0 navodnika (pod ogranicenjem da sadrzaj stringa nema razmaka i da ne predstavlja ime bilo koje varijable unutar koda bez obzira na opsege tih varijabli)
