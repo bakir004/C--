@@ -1,0 +1,6 @@
+🧴🧴
+naprimjer niz = [1, 2, 3, 4, 5]
+print(sizeof niz)  
+
+naprimjer str = "hello"
+print(sizeof str)

@@ -15,7 +15,7 @@ const code = fs.readFileSync(fileName, "utf-8");
 let count = 0;
 count += code.split("🧴").length - 1;
 const lineCount = code.split("\n").filter((line) => line.trim() !== "").length;
-if (count < lineCount / 4) throw new Error("Not enough bug spray!");
+if (count < lineCount / 4) throw new Error("Not enough bug repellent!");
 
 // Map emojis to random identifiers
 function replaceEmojisWithIdentifiers(code) {
@@ -66,10 +66,16 @@ function replaceEmojisWithIdentifiers(code) {
   return { code: result, emojiMap };
 }
 
-const { code: codeWithEmojiReplacements, emojiMap } =
+let { code: codeWithEmojiReplacements, emojiMap } =
   replaceEmojisWithIdentifiers(code);
-const codeWithoutSpray = codeWithEmojiReplacements.replaceAll("🧴", "");
+let codeWithoutSpray = codeWithEmojiReplacements.replaceAll("🧴", "");
 
+function removeLeadingSpaces(code) {
+  const lines = code.split("\n");
+  return lines.map((line) => line.replace(/^\s+/, "")).join("\n");
+}
+codeWithoutSpray = removeLeadingSpaces(codeWithoutSpray);
+// console.log(codeWithoutSpray);
 parser.feed(codeWithoutSpray);
 
 const wrapInDeletedChecker = (key, code) =>
@@ -113,7 +119,7 @@ function checkIndentationsDivisibleBy3(code) {
   }
 }
 
-// checkIndentationsDivisibleBy3(code);
+checkIndentationsDivisibleBy3(code);
 
 // console.log(JSON.stringify(parser.results[0], null, 2));
 
@@ -136,13 +142,24 @@ function transpile(node) {
 
   switch (node.type) {
     case "fun_definition":
+      // Initialize all parameters in pastValues
+      const paramInitializations = node.parameters
+        .map((param) => `pastValues["${param.value}"] = undefined`)
+        .join("\n");
+
+      // Get the body code and prepend parameter initializations
+      const bodyCode = transpile(node.body);
+      const bodyWithParams = paramInitializations
+        ? bodyCode.replace(/^{/, `{\n${paramInitializations}\n`)
+        : bodyCode;
+
       return (
         wrapInDeletedChecker("fn", "") +
         wrapInDeletedChecker(
           node.name.value,
           `function ${node.name.value}(${node.parameters
             .map(transpile)
-            .join(",")})\n${transpile(node.body)}`
+            .join(",")})\n${bodyWithParams}`
         )
       );
     case "identifier":

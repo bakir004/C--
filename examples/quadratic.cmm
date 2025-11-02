@@ -3,23 +3,24 @@ naprimjer b = -5
 naprimjer c = 5
 
 naprimjer eps = 0.00001
+naprimjer gas = true 
 
-fn sqrt(n) {
-  naprimjer l = 0
-  naprimjer r = n
+      fn sqrt(n) {
+   naprimjer l = 0
+   naprimjer r = n
 
-  while true {
-    naprimjer mid = (l+r)/2
-    if mid*mid-n > 0 and mid * mid - n < eps {
-      return mid
-    }
-    if mid * mid > n {
-      r = mid
-    } else if mid * mid < n {
-      l = mid
-    }
-  }
-}
+   while true {
+      naprimjer mid = (l+r)/2
+         if mid*mid-n > 0 and mid * mid - n < eps {
+            return mid
+      }
+if mid * mid > n {
+         r = mid
+      } else if mid * mid < n {
+         l = mid
+      }
+   }
+      }
 
 
 naprimjer x1 = (-1 * b + sqrt(b*b-4*a*c)) / (2*a)
