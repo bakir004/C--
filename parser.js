@@ -62,7 +62,8 @@ const lexer = moo.compile({
             true: "true",
             false: "false",
             maybe: "maybe",
-            delete: "delete"
+            delete: "delete",
+            sizeof: "sizeof"
         })
     }
 });
@@ -336,6 +337,14 @@ var grammar = {
                 },
     {"name": "unary_expression", "symbols": ["number"], "postprocess": id},
     {"name": "unary_expression", "symbols": [{"literal":"-"}, "number"], "postprocess": d => {d[1].value = -d[1].value; return d[1]}},
+    {"name": "unary_expression", "symbols": [{"literal":"sizeof"}, "__", "identifier"], "postprocess": 
+        d => ({
+            type: "sizeof",
+            identifier: d[2],
+            start: tokenStart(d[0]),
+            end: d[2].end
+        })
+                },
     {"name": "unary_expression", "symbols": ["identifier"], "postprocess": 
         d => ({
             type: "var_reference",

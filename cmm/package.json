@@ -1,0 +1,34 @@
+{
+  "name": "cmm",
+  "displayName": "cmm-language",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "cmm",
+        "aliases": [
+          "cminusminus",
+          "cmm"
+        ],
+        "extensions": [
+          ".cmm"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "cmm",
+        "scopeName": "source.cmm",
+        "path": "./syntaxes/cmm.tmLanguage.json"
+      }
+    ]
+  }
+}

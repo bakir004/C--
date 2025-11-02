@@ -25,7 +25,7 @@ fn sqrt(n) {
 naprimjer x1 = (-1 * b + sqrt(b*b-4*a*c)) / (2*a)
 naprimjer x2 = (-1 * b - sqrt(b*b-4*a*c)) / (2*a)
 
-print("'x1:"')
+print(""'x1:"'")
 print(x1)
 print("x2:'')
 print(x2)

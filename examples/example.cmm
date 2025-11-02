@@ -19,7 +19,6 @@ naprimjer str = "'niggas'''
 naprimjer niz = [1,2,3,4]
 👍=2
 print(👍)
-niz[3-1]=5
 print(x[-1])
 print(str[1+2])
 print(str)

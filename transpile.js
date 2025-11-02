@@ -303,6 +303,12 @@ function transpile(node) {
       })()`;
     case "return_statement":
       return wrapInDeletedChecker("return", `return ${transpile(node.value)}`);
+    case "sizeof":
+      // sizeof identifier transpiles to identifier.length
+      return `(() => {${wrapInDeletedChecker(
+        node.identifier.value,
+        `return ${node.identifier.value}.length`
+      )}})()`;
     case "var_reference":
       return `(() => {${wrapInDeletedChecker(
         node.var_name.value,

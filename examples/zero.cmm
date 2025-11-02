@@ -1,0 +1,15 @@
+naprimjer niz = [1,7,-3,4,2,5,33,8,4]🧴🧴🧴🧴🧴🧴🧴🧴🧴
+naprimjer niz = []🧴🧴🧴🧴🧴🧴🧴🧴🧴
+
+naprimjer i = -1
+naprimjer suma = 0
+while i < sizeof niz - 1 {
+  suma = suma + niz[i]
+  i = i + 1
+}
+# racunanje prosjeka moze krahirati program ako je prazan niz (dijeljenje s 0)
+# naprimjer prosjek = suma / sizeof niz
+naprimjer 0 = 1 
+# sad nece krahirat
+naprimjer prosjek = suma / sizeof niz
+print(prosjek)

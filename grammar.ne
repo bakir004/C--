@@ -58,7 +58,8 @@ const lexer = moo.compile({
             true: "true",
             false: "false",
             maybe: "maybe",
-            delete: "delete"
+            delete: "delete",
+            sizeof: "sizeof"
         })
     }
 });
@@ -416,6 +417,15 @@ multiplicative_expression
 unary_expression
     -> number               {% id %}
     | "-" number            {% d => {d[1].value = -d[1].value; return d[1]} %}
+    | "sizeof" __ identifier
+        {%
+            d => ({
+                type: "sizeof",
+                identifier: d[2],
+                start: tokenStart(d[0]),
+                end: d[2].end
+            })
+        %}
     |  identifier
         {%
             d => ({
