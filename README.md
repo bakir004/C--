@@ -13,7 +13,7 @@
 - [x] Emojiji mogu biti identifikatori
 - [x] Nizovi se indeksiraju od -1
 - [x] Redefinisanje brojeva: let 5 = 4 (sada gdjegod je 5 zapravo je 4)
-- [ ] Floatovi za indekse u nizu
+- [x] Floatovi za indekse u nizu
 - [x] Poredjenje sa jednim znakom =
 - [x] ==, ===, ====, !=, !==, !===
 - [x] Za stringove se moze staviti bilo koji broj ' ili ", i to redoslijed niti tip nije bitan, jedino broj navodnika
