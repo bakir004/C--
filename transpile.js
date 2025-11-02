@@ -117,7 +117,12 @@ function checkIndentationsDivisibleBy3(code) {
 
 // console.log(JSON.stringify(parser.results[0], null, 2));
 
-let finalCode = `const deletedIdentifiers = new Set();\nconst redefinedNumbers = {}\nconst pastValues={}\nconst arrayObjects={};\n`;
+let finalCode = `const deletedIdentifiers = new Set();\nconst redefinedNumbers = {}\nconst pastValues={}\nconst arrayObjects={};\nfunction printArrayInOrder(arr) {
+  if (!Array.isArray(arr)) return arr;
+  const indices = Object.keys(arr).map(Number);
+  indices.sort((a, b) => a - b);
+  return indices.map(idx => arr[idx]);
+}\n`;
 let finalNode, finalNode2;
 function transpile(node) {
   if (node === undefined) {
@@ -269,19 +274,41 @@ var ${varName} = pastValues.hasOwnProperty("${rhsVarName}") ? ${transpile(
     case "indexed_access": {
       const subjectExpr = transpile(node.subject);
       const indexExpr = transpile(node.index);
-      return `(() => {
-        // nigga comment
-        if (Number.isInteger(${subjectExpr})) {
-          // x[i] where i starts from -1, so x[-1] is 1st digit, x[0] is 2nd digit, etc.
-          const digits = Math.abs(${subjectExpr}).toString().split('').map(Number);
-          const idx = ${indexExpr} + 1; // Convert from -1-based to 0-based indexing
-          if (idx >= 0 && idx < digits.length) {
-            return digits[idx];
+
+      // Extract variable name if subject is a var_reference
+      let varName = null;
+      if (node.subject.type === "var_reference") {
+        varName = node.subject.var_name.value;
+      }
+
+      if (varName) {
+        return `(() => {
+          if (Number.isInteger(${subjectExpr})) {
+            // x[i] where i starts from -1, so x[-1] is 1st digit, x[0] is 2nd digit, etc.
+            const digits = Math.abs(${subjectExpr}).toString().split('').map(Number);
+            const idx = ${indexExpr} + 1; // Convert from -1-based to 0-based indexing
+            if (idx >= 0 && idx < digits.length) {
+              return digits[idx];
+            }
+            return undefined;
           }
-          return undefined;
-        }
-        return ${subjectExpr}[${indexExpr}+1];
-      })()`;
+          // Check if array exists in arrayObjects
+          return ${subjectExpr}[${indexExpr}+1];
+        })()`;
+      } else {
+        return `(() => {
+          if (Number.isInteger(${subjectExpr})) {
+            // x[i] where i starts from -1, so x[-1] is 1st digit, x[0] is 2nd digit, etc.
+            const digits = Math.abs(${subjectExpr}).toString().split('').map(Number);
+            const idx = ${indexExpr} + 1; // Convert from -1-based to 0-based indexing
+            if (idx >= 0 && idx < digits.length) {
+              return digits[idx];
+            }
+            return undefined;
+          }
+          return ${subjectExpr}[${indexExpr}+1];
+        })()`;
+      }
     }
     case "indexed_assignment": {
       const subjectExpr = transpile(node.subject);
@@ -328,9 +355,6 @@ var ${varName} = pastValues.hasOwnProperty("${rhsVarName}") ? ${transpile(
             // For arrays/objects
             const indexValue = ${indexExpr}+1;
             ${subjectExpr}[indexValue] = ${valueExpr};
-            if (Array.isArray(${subjectExpr}) && arrayObjects["${varName}"]) {
-              arrayObjects["${varName}"][indexValue-1] = ${valueExpr};
-            }
             return ${subjectExpr};
           })()`
         );
@@ -457,18 +481,23 @@ var ${varName} = pastValues.hasOwnProperty("${rhsVarName}") ? ${transpile(
         // Process arguments: if it's a var_reference to a list, use arrayObjects with sorted keys
         const processedArgs = node.arguments.map((arg) => {
           if (arg.type === "var_reference") {
-            const varName = arg.var_name.value;
             return `(() => {
               const val = ${transpile(arg)};
-              if (Array.isArray(val) && arrayObjects["${varName}"]) {
-                const sortedKeys = Object.keys(arrayObjects["${varName}"]).map(Number).sort((a, b) => a - b);
-                return sortedKeys.map(k => arrayObjects["${varName}"][k]);
+              if (Array.isArray(val)) {
+                return printArrayInOrder(val);
               }
               return val;
             })()`;
           }
-          // For non-var_reference arguments, just transpile normally
-          return transpile(arg);
+          // For non-var_reference arguments, check if they're arrays
+          const argExpr = transpile(arg);
+          return `(() => {
+            const val = ${argExpr};
+            if (Array.isArray(val)) {
+              return printArrayInOrder(val);
+            }
+            return val;
+          })()`;
         });
 
         return wrapInDeletedChecker(

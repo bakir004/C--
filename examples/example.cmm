@@ -38,13 +38,10 @@ print(str)
 str[-1] = 'g'
 print(str)
 
-niz = [1,2,3,4,5,6,7]
-niz[-1] = 10
+niz = [1,3,4,5,6,7,8]
+niz[-0.5] = 2
 print(niz)
-niz[4] = 10
-print(niz)
-niz[-0.5] = 1
-print(niz)
+print(niz[-0.5])
 
 naprimjer pozdrav = Hello 
 print(pozdrav)
