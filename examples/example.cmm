@@ -45,3 +45,6 @@ niz[4] = 10
 print(niz)
 niz[-0.5] = 1
 print(niz)
+
+naprimjer pozdrav = Hello 
+print(pozdrav)

@@ -178,6 +178,20 @@ for(let i=0; i<${varName}.length; i++) {
         );
       }
 
+      // Check if rhs is just an identifier that doesn't exist in pastValues
+      if (node.value.type === "var_reference") {
+        const rhsVarName = node.value.var_name.value;
+        const varName = node.var_name.value;
+        return wrapInDeletedChecker(
+          varName,
+          `pastValues["${varName}"] = ${varName}
+${varName} = pastValues.hasOwnProperty("${rhsVarName}") ? ${transpile(
+            node.value
+          )} : "${rhsVarName}"
+`
+        );
+      }
+
       return wrapInDeletedChecker(
         node.var_name.value,
         `pastValues["${node.var_name.value}"] = ${node.var_name.value}\n${
@@ -221,6 +235,20 @@ arrayObjects["${varName}"] = {};
 for(let i=0; i<${varName}.length; i++) {
   arrayObjects["${varName}"][i-1] = ${varName}[i];
 }
+`
+        );
+      }
+
+      // Check if rhs is just an identifier that doesn't exist in pastValues
+      if (node.value.type === "var_reference") {
+        const rhsVarName = node.value.var_name.value;
+        const varName = node.var_name.value;
+        return wrapInDeletedChecker(
+          varName,
+          `pastValues["${varName}"]=undefined
+var ${varName} = pastValues.hasOwnProperty("${rhsVarName}") ? ${transpile(
+            node.value
+          )} : "${rhsVarName}"
 `
         );
       }
