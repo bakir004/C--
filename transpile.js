@@ -213,7 +213,6 @@ for(let i=0; i<${varName}.length; i++) {
       if (node.value.type === "list_literal") {
         const varName = node.var_name.value;
         const listValue = transpile(node.value);
-        console.log(listValue);
         return wrapInDeletedChecker(
           varName,
           `pastValues["${varName}"]=undefined
@@ -253,6 +252,7 @@ for(let i=0; i<${varName}.length; i++) {
           }
           return undefined;
         }
+        return ${subjectExpr}[${indexExpr}+1];
       })()`;
     }
     case "indexed_assignment": {
