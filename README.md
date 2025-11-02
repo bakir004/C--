@@ -8,6 +8,22 @@
 
 C-- je savršeni programski jezik koji je namijenjen za sve vrste programera, čak i one loše.
 
+## Instalacija
+
+Prvo instalirajte `node` na svoj sistem i podesite `$PATH` environment varijablu.
+
+Zatim klonirajte repozitorij, navigirajte u njega i pokrenite `npm install`.
+
+Napravite `.cmm` file i upišite svoj C-- kod.
+
+Unutar foldera koji ste klonirali pokrenite komandu
+
+```zsh
+node transpile.js <ime_vaseg_cmm_fajla>
+```
+
+i nadajte se da ste sve fino isprogramirali. Pogledajte upute ispod!
+
 ## Osnovna Sintaksa
 
 C-- kod se neće kompajlirati ako nema dovoljno sredstava protiv bugova (🧴). Stavite ih bilo gdje u svoj kod dok ne uspijete kompajlirati. Sredstva protiv bugova neće smetati vašem kodu.
