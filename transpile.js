@@ -119,7 +119,7 @@ function checkIndentationsDivisibleBy3(code) {
   }
 }
 
-checkIndentationsDivisibleBy3(code);
+// checkIndentationsDivisibleBy3(code);
 
 // console.log(JSON.stringify(parser.results[0], null, 2));
 

@@ -1,6 +1,10 @@
-🧴🧴
+🧴🧴🧴🧴
 naprimjer niz = [1, 2, 3, 4, 5]
 print(sizeof niz)  
 
 naprimjer str = "hello"
-print(sizeof str)
+naprimjer x = 0
+while x != 10 {
+   print(x)
+   x = x + 1
+}

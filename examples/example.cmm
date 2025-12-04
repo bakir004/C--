@@ -15,7 +15,7 @@ if maybe {
    print("not ok")🧴
 }
 naprimjer x = 12345
-naprimjer str = "'niggas'''
+naprimjer str = "'ligma'''
 naprimjer niz = [1,2,3,4]
 👍=2
 print(👍)
