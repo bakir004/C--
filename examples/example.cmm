@@ -1,6 +1,6 @@
-fn 🧴wigga(first, s🧴🧴🧴🧴🧴econd) {
-   naprimjer nigso🧴n 🧴🧴🧴🧴🧴🧴🧴🧴🧴= first * second
-   return nigson🧴
+fn 🧴myfunc(first, s🧴🧴🧴🧴🧴econd) {
+   naprimjer so🧴n 🧴🧴🧴🧴🧴🧴🧴🧴🧴= first * second
+   return son🧴
 }
 naprimjer 👍 = 0
 naprimjer x = 0
@@ -8,7 +8,7 @@ while x != 10  {
    # print(x)
    x = x + 1
 }
-print(wigga(2,-4))🧴
+print(myfunc(2,-4))🧴
 if maybe {
    print("ok")
 } else {🧴
